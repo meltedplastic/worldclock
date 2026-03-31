@@ -183,17 +183,12 @@ ul {
 .clock-grid[data-count="3"],
 .clock-grid[data-count="4"],
 .clock-grid[data-count="5"],
-.clock-grid[data-count="6"] {
-  grid-template-columns: repeat(3, 1fr);
-}
-
+.clock-grid[data-count="6"],
 .clock-grid[data-count="7"],
 .clock-grid[data-count="8"],
 .clock-grid[data-count="9"],
-.clock-grid[data-count="10"],
-.clock-grid[data-count="11"],
-.clock-grid[data-count="12"] {
-  grid-template-columns: repeat(4, 1fr);
+.clock-grid[data-count="many"] {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 /* ============================================================
@@ -214,11 +209,11 @@ ul {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: 8px;
+  letter-spacing: 0.15em;
   color: var(--text-muted);
   opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
+  transition: opacity 0.2s, color 0.15s;
   text-transform: uppercase;
 }
 
@@ -243,9 +238,9 @@ ul {
 
 /* Time display */
 .clock-col__time {
-  font-size: 48px;
-  font-weight: 300;
-  letter-spacing: -0.02em;
+  font-size: 72px;
+  font-weight: 200;
+  letter-spacing: -0.03em;
   color: var(--text-primary);
   line-height: 1;
   margin-bottom: 0.5rem;
@@ -580,7 +575,7 @@ ul {
   }
 
   .clock-col__time {
-    font-size: 36px;
+    font-size: 48px;
   }
 
   .app {
@@ -606,7 +601,7 @@ ul {
   }
 
   .clock-col__time {
-    font-size: 42px;
+    font-size: 56px;
   }
 
   .app {

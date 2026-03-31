@@ -67,7 +67,7 @@ const resetBtn = document.getElementById('resetTimeBtn');
 
 function renderClocks() {
   const count = state.cities.length;
-  clockGrid.setAttribute('data-count', count <= 6 ? String(count) : 'many');
+  clockGrid.setAttribute('data-count', count <= 9 ? String(count) : 'many');
 
   clockGrid.innerHTML = state.cities.map((city, i) => {
     const info = getTimeForTz(city.tz, state.scrubOffset);
