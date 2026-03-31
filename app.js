@@ -1,6 +1,7 @@
 // app.js — Main application module
 
 import { loadCities, searchCities } from './cities.js';
+import { initCalendar, ensureAuth, listCalendars, createEvent } from './calendar.js';
 
 // ===== STATE =====
 
@@ -267,9 +268,110 @@ cityResults.addEventListener('click', (e) => {
   renderClocks();
 });
 
+// ===== CALENDAR EVENT =====
+
+const calendarOverlay = document.getElementById('calendarOverlay');
+const calendarSelect = document.getElementById('calendarSelect');
+const durationPicker = document.getElementById('durationPicker');
+let selectedDuration = 60;
+
+document.getElementById('createEventBtn').addEventListener('click', async () => {
+  const authed = await ensureAuth();
+  if (!authed) {
+    showToast('SIGN-IN REQUIRED');
+    return;
+  }
+
+  try {
+    const calendars = await listCalendars();
+    calendarSelect.innerHTML = calendars.map(c =>
+      `<option value="${c.id}">${c.summary}</option>`
+    ).join('');
+  } catch {
+    calendarSelect.innerHTML = '<option value="primary">Primary</option>';
+  }
+
+  document.getElementById('eventTitle').value = '';
+  selectedDuration = 60;
+  updateDurationPicker();
+  calendarOverlay.hidden = false;
+});
+
+durationPicker.addEventListener('click', (e) => {
+  const btn = e.target.closest('.duration-picker__btn');
+  if (!btn) return;
+  selectedDuration = parseInt(btn.dataset.minutes);
+  updateDurationPicker();
+});
+
+function updateDurationPicker() {
+  durationPicker.querySelectorAll('.duration-picker__btn').forEach(btn => {
+    btn.classList.toggle('duration-picker__btn--active', parseInt(btn.dataset.minutes) === selectedDuration);
+  });
+}
+
+document.getElementById('calendarCreateBtn').addEventListener('click', async () => {
+  const title = document.getElementById('eventTitle').value.trim();
+  if (!title) return;
+
+  const calendarId = calendarSelect.value || 'primary';
+
+  const now = new Date();
+  if (state.scrubOffset !== null) {
+    now.setMinutes(now.getMinutes() + state.scrubOffset);
+  }
+
+  const description = state.cities.map(city => {
+    const info = getTimeForTz(city.tz, state.scrubOffset);
+    return `${city.name}: ${info.time} ${info.abbr}`;
+  }).join('\n');
+
+  try {
+    await createEvent({
+      calendarId,
+      title,
+      startTime: now,
+      durationMinutes: selectedDuration,
+      description,
+    });
+    calendarOverlay.hidden = true;
+    showToast('EVENT CREATED');
+  } catch (err) {
+    showToast('ERROR: ' + err.message);
+  }
+});
+
+document.getElementById('calendarCancelBtn').addEventListener('click', () => {
+  calendarOverlay.hidden = true;
+});
+
+calendarOverlay.addEventListener('click', (e) => {
+  if (e.target === calendarOverlay) calendarOverlay.hidden = true;
+});
+
 // ===== INIT =====
+
+// Init Google Calendar — retry until GIS script is loaded
+function tryInitCalendar() {
+  if (window.google?.accounts?.oauth2) {
+    initCalendar();
+  } else {
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.google?.accounts?.oauth2) {
+        clearInterval(interval);
+        initCalendar();
+      } else if (attempts > 10) {
+        clearInterval(interval);
+        console.warn('Google Identity Services did not load. Calendar features unavailable.');
+      }
+    }, 500);
+  }
+}
 
 applyTheme();
 renderClocks();
 initScrubber();
 startTicking();
+tryInitCalendar();
