@@ -1,6 +1,6 @@
 // calendar.js — Google Calendar OAuth + event creation
 
-const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; // Replace with actual
+const CLIENT_ID = '519035913816-nbl3e2mehvrh9anputugdtr5vclejaic.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
 const CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
 
