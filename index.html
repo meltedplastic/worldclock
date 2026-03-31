@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WORLDCLOCK</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <span class="header__logo">WORLDCLOCK</span>
+      <div class="header__actions">
+        <button class="header__theme-toggle" id="themeToggle" aria-label="Toggle theme"></button>
+        <button class="header__add-city" id="addCityBtn">+ CITY</button>
+      </div>
+    </header>
+    <main class="clock-grid" id="clockGrid"></main>
+    <footer class="action-bar" id="actionBar">
+      <button class="action-bar__btn" id="copySummaryBtn">COPY SUMMARY</button>
+      <button class="action-bar__btn" id="createEventBtn">CREATE EVENT</button>
+      <button class="action-bar__btn action-bar__btn--reset" id="resetTimeBtn" hidden>RESET TO NOW</button>
+    </footer>
+    <div class="overlay" id="cityOverlay" hidden>
+      <div class="overlay__content">
+        <input class="overlay__search" id="citySearch" type="text" placeholder="Search city..." autocomplete="off">
+        <ul class="overlay__results" id="cityResults"></ul>
+        <button class="overlay__close" id="cityOverlayClose">CLOSE</button>
+      </div>
+    </div>
+    <div class="overlay" id="calendarOverlay" hidden>
+      <div class="overlay__content overlay__content--narrow">
+        <h3 class="overlay__title">CREATE EVENT</h3>
+        <input class="overlay__input" id="eventTitle" type="text" placeholder="Event title">
+        <div class="duration-picker" id="durationPicker">
+          <button class="duration-picker__btn" data-minutes="30">30m</button>
+          <button class="duration-picker__btn duration-picker__btn--active" data-minutes="60">1h</button>
+          <button class="duration-picker__btn" data-minutes="90">1.5h</button>
+          <button class="duration-picker__btn" data-minutes="120">2h</button>
+        </div>
+        <select class="overlay__select" id="calendarSelect">
+          <option value="">Loading calendars...</option>
+        </select>
+        <div class="overlay__actions">
+          <button class="action-bar__btn" id="calendarCreateBtn">CREATE</button>
+          <button class="action-bar__btn" id="calendarCancelBtn">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
