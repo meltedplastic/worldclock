@@ -75,13 +75,15 @@ function renderClocks() {
     const pct = (minutesInDay / 1440) * 100;
 
     return `
-      <div class="clock" data-index="${i}" data-tz="${city.tz}">
-        <button class="clock__remove" data-index="${i}" aria-label="Remove ${city.name}">×</button>
-        <div class="clock__city">${city.name}</div>
-        <div class="clock__time">${info.time}</div>
-        <div class="clock__meta">${info.abbr} · ${info.day}</div>
+      <div class="clock-col" data-index="${i}" data-tz="${city.tz}">
+        <button class="clock-col__remove" data-index="${i}" aria-label="Remove ${city.name}">remove</button>
+        <div class="clock-col__city">${city.name}</div>
+        <div class="clock-col__time">${info.time}</div>
+        <div class="clock-col__meta">${info.abbr} · ${info.day}</div>
         <div class="scrubber" data-index="${i}">
-          <div class="scrubber__handle" style="left: ${pct}%"></div>
+          <div class="scrubber__track">
+            <div class="scrubber__handle" style="left: ${pct}%"></div>
+          </div>
         </div>
       </div>
     `;
@@ -139,7 +141,8 @@ function initScrubber() {
     if (!scrubber) return;
 
     e.preventDefault();
-    const rect = scrubber.getBoundingClientRect();
+    const track = scrubber.querySelector('.scrubber__track') || scrubber;
+    const rect = track.getBoundingClientRect();
 
     const onMove = (moveEvent) => {
       const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
@@ -147,7 +150,7 @@ function initScrubber() {
       const targetMinutes = Math.round(pct * 1440); // 0-1440 minutes in day
 
       // Get this clock's timezone
-      const tz = scrubber.closest('.clock').dataset.tz;
+      const tz = scrubber.closest('.clock-col').dataset.tz;
       const currentMinutes = getMinutesInDay(tz, null);
       let diff = targetMinutes - currentMinutes;
 
@@ -182,7 +185,7 @@ resetBtn.addEventListener('click', () => {
 // ===== REMOVE CITY =====
 
 clockGrid.addEventListener('click', (e) => {
-  const removeBtn = e.target.closest('.clock__remove');
+  const removeBtn = e.target.closest('.clock-col__remove');
   if (!removeBtn) return;
 
   const index = parseInt(removeBtn.dataset.index);
