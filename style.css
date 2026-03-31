@@ -204,21 +204,38 @@ ul {
   border-left: none;
 }
 
-/* Remove button */
-.clock-col__remove {
+/* Controls (move + remove) */
+.clock-col__controls {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.clock-col:hover .clock-col__controls {
+  opacity: 1;
+}
+
+.clock-col__move {
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+
+.clock-col__move:hover {
+  color: var(--text-primary);
+}
+
+.clock-col__remove {
   font-size: 8px;
   letter-spacing: 0.15em;
   color: var(--text-muted);
-  opacity: 0;
-  transition: opacity 0.2s, color 0.15s;
+  transition: color 0.15s;
   text-transform: uppercase;
-}
-
-.clock-col:hover .clock-col__remove {
-  opacity: 1;
 }
 
 .clock-col__remove:hover {
@@ -529,6 +546,46 @@ ul {
   color: var(--bg);
   background-color: var(--text-primary);
   border-color: var(--text-primary);
+}
+
+/* ============================================================
+   EVENT DATE/TIME
+   ============================================================ */
+.event-datetime {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.event-datetime__date {
+  flex: 1.2;
+  margin-bottom: 0;
+}
+
+.event-datetime__time {
+  flex: 0.8;
+  margin-bottom: 0;
+}
+
+.event-tz-label {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+/* Fix date/time input styling for dark mode */
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+}
+
+[data-theme="light"] input[type="date"],
+[data-theme="light"] input[type="time"] {
+  color-scheme: light;
 }
 
 /* ============================================================

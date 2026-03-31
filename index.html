@@ -32,12 +32,18 @@
       <div class="overlay__content overlay__content--narrow">
         <h3 class="overlay__title">CREATE EVENT</h3>
         <input class="overlay__input" id="eventTitle" type="text" placeholder="Event title">
+        <div class="event-datetime">
+          <input class="overlay__input event-datetime__date" id="eventDate" type="date">
+          <input class="overlay__input event-datetime__time" id="eventTime" type="time">
+        </div>
         <div class="duration-picker" id="durationPicker">
           <button class="duration-picker__btn" data-minutes="30">30m</button>
           <button class="duration-picker__btn duration-picker__btn--active" data-minutes="60">1h</button>
           <button class="duration-picker__btn" data-minutes="90">1.5h</button>
           <button class="duration-picker__btn" data-minutes="120">2h</button>
         </div>
+        <label class="event-tz-label" id="eventTzLabel">TIMEZONE</label>
+        <select class="overlay__select" id="eventTzSelect"></select>
         <select class="overlay__select" id="calendarSelect">
           <option value="">Loading calendars...</option>
         </select>

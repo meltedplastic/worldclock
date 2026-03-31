@@ -76,7 +76,11 @@ function renderClocks() {
 
     return `
       <div class="clock-col" data-index="${i}" data-tz="${city.tz}">
-        <button class="clock-col__remove" data-index="${i}" aria-label="Remove ${city.name}">remove</button>
+        <div class="clock-col__controls">
+          ${i > 0 ? `<button class="clock-col__move" data-index="${i}" data-dir="-1" aria-label="Move left">←</button>` : ''}
+          ${i < count - 1 ? `<button class="clock-col__move" data-index="${i}" data-dir="1" aria-label="Move right">→</button>` : ''}
+          <button class="clock-col__remove" data-index="${i}" aria-label="Remove ${city.name}">remove</button>
+        </div>
         <div class="clock-col__city">${city.name}</div>
         <div class="clock-col__time">${info.time}</div>
         <div class="clock-col__meta">${info.abbr} · ${info.day}</div>
@@ -194,6 +198,27 @@ clockGrid.addEventListener('click', (e) => {
   renderClocks();
 });
 
+// ===== REORDER CITIES =====
+
+clockGrid.addEventListener('click', (e) => {
+  const moveBtn = e.target.closest('.clock-col__move');
+  if (!moveBtn) return;
+
+  const index = parseInt(moveBtn.dataset.index);
+  const dir = parseInt(moveBtn.dataset.dir);
+  const newIndex = index + dir;
+
+  if (newIndex < 0 || newIndex >= state.cities.length) return;
+
+  // Swap
+  const temp = state.cities[index];
+  state.cities[index] = state.cities[newIndex];
+  state.cities[newIndex] = temp;
+
+  saveToStorage('wc_cities', state.cities);
+  renderClocks();
+});
+
 // ===== COPY SUMMARY =====
 
 document.getElementById('copySummaryBtn').addEventListener('click', () => {
@@ -276,7 +301,32 @@ cityResults.addEventListener('click', (e) => {
 const calendarOverlay = document.getElementById('calendarOverlay');
 const calendarSelect = document.getElementById('calendarSelect');
 const durationPicker = document.getElementById('durationPicker');
+const eventDate = document.getElementById('eventDate');
+const eventTime = document.getElementById('eventTime');
+const eventTzSelect = document.getElementById('eventTzSelect');
 let selectedDuration = 60;
+
+function prefillDateTime() {
+  // Pre-fill with the currently displayed time (scrubbed or live)
+  const now = new Date();
+  if (state.scrubOffset !== null) {
+    now.setMinutes(now.getMinutes() + state.scrubOffset);
+  }
+
+  // Use the first city's timezone for the default date/time display
+  const tz = state.cities.length > 0 ? state.cities[0].tz : Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const localDate = now.toLocaleDateString('en-CA', { timeZone: tz }); // YYYY-MM-DD
+  const localTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz, hour12: false });
+
+  eventDate.value = localDate;
+  eventTime.value = localTime;
+
+  // Populate timezone selector with current cities
+  eventTzSelect.innerHTML = state.cities.map((city, i) => {
+    const abbr = getTimezoneAbbr(city.tz, now);
+    return `<option value="${city.tz}" ${i === 0 ? 'selected' : ''}>${city.name} (${abbr})</option>`;
+  }).join('');
+}
 
 document.getElementById('createEventBtn').addEventListener('click', async () => {
   const authed = await ensureAuth();
@@ -297,7 +347,9 @@ document.getElementById('createEventBtn').addEventListener('click', async () => 
   document.getElementById('eventTitle').value = '';
   selectedDuration = 60;
   updateDurationPicker();
+  prefillDateTime();
   calendarOverlay.hidden = false;
+  document.getElementById('eventTitle').focus();
 });
 
 durationPicker.addEventListener('click', (e) => {
@@ -318,22 +370,43 @@ document.getElementById('calendarCreateBtn').addEventListener('click', async () 
   if (!title) return;
 
   const calendarId = calendarSelect.value || 'primary';
+  const dateVal = eventDate.value; // YYYY-MM-DD
+  const timeVal = eventTime.value; // HH:MM
+  const tz = eventTzSelect.value;
 
-  const now = new Date();
-  if (state.scrubOffset !== null) {
-    now.setMinutes(now.getMinutes() + state.scrubOffset);
+  if (!dateVal || !timeVal) {
+    showToast('SET DATE & TIME');
+    return;
   }
 
+  // Build an ISO string with timezone info
+  // We create the date in the selected timezone by computing the offset
+  const localStr = `${dateVal}T${timeVal}:00`;
+  const localDate = new Date(localStr);
+
+  // Get the offset for the selected timezone at that date
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    timeZoneName: 'longOffset',
+  });
+  const parts = formatter.formatToParts(localDate);
+  const offsetPart = parts.find(p => p.type === 'timeZoneName');
+  const offsetStr = offsetPart ? offsetPart.value.replace('GMT', '') : '+00:00';
+  const isoWithTz = `${dateVal}T${timeVal}:00${offsetStr || '+00:00'}`;
+
+  // Build description with timezone summary at the event time
+  const eventStartDate = new Date(isoWithTz);
   const description = state.cities.map(city => {
-    const info = getTimeForTz(city.tz, state.scrubOffset);
-    return `${city.name}: ${info.time} ${info.abbr}`;
+    const time = eventStartDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: city.tz, hour12: false });
+    const abbr = getTimezoneAbbr(city.tz, eventStartDate);
+    return `${city.name}: ${time} ${abbr}`;
   }).join('\n');
 
   try {
     await createEvent({
       calendarId,
       title,
-      startTime: now,
+      startTime: isoWithTz,
       durationMinutes: selectedDuration,
       description,
     });
